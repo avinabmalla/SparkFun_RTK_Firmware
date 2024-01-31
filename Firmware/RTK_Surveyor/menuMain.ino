@@ -93,13 +93,18 @@ void menuMain()
 
         if (btPrintEcho)
             systemPrintln("b) Exit Bluetooth Echo mode");
-
+        systemPrintln("+) Enter Command line mode");
         systemPrintln("x) Exit");
 
         byte incoming = getCharacterNumber();
 
         if (incoming == 1)
             menuGNSS();
+        else if (incoming == '+')
+        {
+            menuCommands();
+            break;
+        }
         else if (incoming == 2)
             menuMessages();
         else if (incoming == 3 && zedModuleType == PLATFORM_F9P)
