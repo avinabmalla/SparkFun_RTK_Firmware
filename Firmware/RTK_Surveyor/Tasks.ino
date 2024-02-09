@@ -89,6 +89,8 @@ static uint16_t rbOffsetHead;
 //----------------------------------------
 // Task routines
 //----------------------------------------
+bool runCommandMode =false;
+int cmdCharCount =0 ;
 
 // If the phone has any new data (NTRIP RTCM, etc), read it in over Bluetooth and pass along to ZED
 // Scan for escape characters to enter config menu
@@ -115,6 +117,34 @@ void btReadTask(void *e)
                 byte incoming = bluetoothRead();
                 rxBytes += 1;
 
+                if(incoming == '-'){
+                    cmdCharCount++;
+                    Serial.print("CommandChar Count");
+                    Serial.println(cmdCharCount);
+
+                    if(cmdCharCount == 10){
+                        systemPrintln("Echoing all serial to BT device");
+                        btPrintEcho = true;
+                        runCommandMode = true;
+                        printEndpoint = PRINT_ENDPOINT_ALL;
+                        cmdCharCount = 0;
+                    }
+                }
+                else{
+                    cmdCharCount = 0;
+                    while(cmdCharCount-- > 0){
+                        if (USE_I2C_GNSS)
+                            addToZedI2CBuffer('-');
+                        else
+                        {
+                            uint8_t escChar = '-';
+                            theGNSS.pushRawData(&escChar, 1);
+                        }
+                    }
+                    cmdCharCount = 0;
+                }
+
+
                 if (incoming == btEscapeCharacter)
                 {
                     // Ignore escape characters received within 2 seconds of serial traffic
@@ -124,10 +154,9 @@ void btReadTask(void *e)
                         btEscapeCharsReceived++;
                         if (btEscapeCharsReceived == btMaxEscapeCharacters)
                         {
-                            printEndpoint = PRINT_ENDPOINT_ALL;
                             systemPrintln("Echoing all serial to BT device");
                             btPrintEcho = true;
-
+                            printEndpoint = PRINT_ENDPOINT_ALL;
                             btEscapeCharsReceived = 0;
                             btLastByteReceived = millis();
                         }
@@ -160,6 +189,7 @@ void btReadTask(void *e)
                             theGNSS.pushRawData(&escChar, 1);
                         }
                     }
+                    btEscapeCharsReceived = 0;
 
                     // Pass byte to GNSS receiver or to system
                     // TODO - control if this RTCM source should be listened to or not

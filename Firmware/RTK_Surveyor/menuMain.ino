@@ -23,6 +23,12 @@ void menuMain()
     inMainMenu = true;
     displaySerialConfig(); // Display 'Serial Config' while user is configuring
 
+    if(runCommandMode){
+        runCommandMode = false;
+        menuCommands();
+        return;
+    }
+
     while (1)
     {
         systemPrintln();
@@ -103,7 +109,6 @@ void menuMain()
         else if (incoming == '+')
         {
             menuCommands();
-            break;
         }
         else if (incoming == 2)
             menuMessages();
