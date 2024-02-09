@@ -2029,7 +2029,7 @@ void getSettingValue(const char *settingName, char *settingValueStr)
         writeToString(settingValueStr, settings.maxLogLength_minutes);
     else if (strcmp(settingName, "measurementRateHz") == 0)
     {
-        writeToString(settingValueStr, 1.0 / (settings.measurementRate * 1000));
+        writeToString(settingValueStr, 1000.0 / settings.measurementRate);
     }
     else if (strcmp(settingName, "dynamicModel") == 0)
         writeToString(settingValueStr, settings.dynamicModel);
